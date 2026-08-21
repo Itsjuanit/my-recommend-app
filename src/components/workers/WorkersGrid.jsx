@@ -1,9 +1,27 @@
 import { useState, useEffect } from "react";
 import { AiOutlineWhatsApp } from "react-icons/ai";
+import { FiSearch } from "react-icons/fi";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import PaginationNav1 from "../reusable/PaginationNav1"; // Ajusta la ruta según tu estructura
 import { getWorkerTagLabel } from "../../utils/workerTags";
+
+// Un color por oficio: se usa como acento fino, no como fondo de la tarjeta
+const TRADE_ACCENT = {
+  ELECTRICISTA: "#ffe05c",
+  REFRIGERACION: "#7fe8da",
+  PLOMERO: "#5ec8f7",
+  MUEBLES: "#d4a574",
+  CARPINTERO: "#e0a46b",
+  GASISTA: "#ffb13d",
+  METALURGICO: "#9fb3c8",
+  CERRAJERO: "#c0c8d4",
+  ALBAÑIL: "#a8b4c4",
+  PINTOR: "#c88bf0",
+};
+const DEFAULT_ACCENT = "#d4fc79";
+
+const getAccent = (tag) => TRADE_ACCENT[tag?.toUpperCase()] ?? DEFAULT_ACCENT;
 
 const WorkersGrid = () => {
   const [search, setSearch] = useState("");
@@ -12,32 +30,6 @@ const WorkersGrid = () => {
   // Usamos pageIndex (0-based) para la paginación
   const [pageIndex, setPageIndex] = useState(0);
   const itemsPerPage = 9;
-
-  const getBackgroundImage = (tag) => {
-    if (!tag) return "";
-    switch (tag.toUpperCase()) {
-      case "ELECTRICISTA":
-        return "linear-gradient(to top, #fad0c4 0%, #ffd1ff 100%)";
-      case "REFRIGERACION":
-        return "linear-gradient(120deg, #f093fb 0%, #f5576c 100%)";
-      case "PLOMERO":
-        return "linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%)";
-      case "MUEBLES":
-        return "linear-gradient(to right, #43e97b 0%, #38f9d7 100%)";
-      case "CARPINTERO":
-        return "linear-gradient(to top, #fddb92 0%, #d1fdff 100%)";
-      case "GASISTA":
-        return "linear-gradient(to top, #f8ac08 0%, #576061 100%)";
-      case "METALURGICO":
-        return "linear-gradient(to top, #03e4ac 0%, #ee1e9e 100%)";
-      case "CERRAJERO":
-        return "linear-gradient(to top, #bbf0e4 0%, #7bafda 100%)";
-      case "ALBAÑIL":
-        return "linear-gradient(to top, #47ceae 0%, #566674 100%)";
-      default:
-        return "";
-    }
-  };
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
@@ -69,96 +61,100 @@ const WorkersGrid = () => {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   return (
-    <section className="py-5 sm:py-10 mt-5 sm:mt-10 min-h-screen">
-      <div className="text-center mb-10">
-        <h1 className="font-bold text-3xl sm:text-4xl mb-2 text-gray-900">LISTA DE TRABAJADORES</h1>
-        <p className="text-gray-600 max-w-md mx-auto">Encuentra profesionales calificados para tu proyecto</p>
+    <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:py-20">
+      {/* ── Encabezado de sección ────────────────────────────── */}
+      <div className="flex items-center gap-3">
+        <span className="h-px w-8 bg-acid" />
+        <h2 className="label-tech text-acid">Lista de trabajadores</h2>
+      </div>
+      <p className="mt-5 max-w-lg font-display text-3xl font-bold leading-tight tracking-[-0.02em] text-bone sm:text-4xl">
+        Buscá por oficio y contactalos directo por WhatsApp.
+      </p>
+
+      {/* ── Buscador ─────────────────────────────────────────── */}
+      <div className="mt-9 flex flex-col gap-4 border-y border-line-dim py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-sm">
+          <FiSearch
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-faint"
+            aria-hidden="true"
+          />
+          <label htmlFor="worker-search" className="sr-only">
+            Buscar por especialidad
+          </label>
+          <input
+            id="worker-search"
+            type="search"
+            placeholder="Buscar por especialidad…"
+            value={search}
+            onChange={handleSearch}
+            className="w-full rounded-sm border border-line bg-surface py-3.5 pl-11 pr-4 text-bone placeholder:text-faint transition-colors focus:border-acid focus:outline-none"
+          />
+        </div>
+        <span className="label-tech text-faint">
+          {loading ? "Cargando…" : `${filteredData.length} disponibles`}
+        </span>
       </div>
 
-      <div className="max-w-screen-lg mx-auto px-4">
-        <div className="mb-8">
-          <div className="relative max-w-md mx-auto">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <a className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Buscar por especialidad..."
-              value={search}
-              onChange={handleSearch}
-              className="w-full py-3 pl-10 pr-4 text-gray-700 border rounded-lg outline-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-            />
-          </div>
+      {/* ── Estados y grilla ─────────────────────────────────── */}
+      {loading ? (
+        <p className="py-20 text-center text-dim">Cargando trabajadores…</p>
+      ) : filteredData.length === 0 ? (
+        <div className="py-20 text-center">
+          <p className="font-display text-2xl font-bold text-bone">Sin resultados</p>
+          <p className="mt-2 text-dim">No encontramos trabajadores con esa especialidad.</p>
         </div>
-      </div>
+      ) : (
+        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {currentItems.map((worker) => {
+            const tagLabel = getWorkerTagLabel(worker, "General");
+            const accent = getAccent(tagLabel);
 
-      {loading && (
-        <div className="text-center py-10">
-          <p className="text-gray-500 text-lg">Cargando trabajadores...</p>
-        </div>
-      )}
+            return (
+              <li
+                key={worker.id}
+                className="group relative flex flex-col overflow-hidden rounded-sm border border-line-dim bg-surface transition-all duration-300 hover:-translate-y-1 hover:border-line hover:shadow-[0_18px_40px_-20px_rgba(0,0,0,0.9)]"
+              >
+                {/* Barra de color del oficio */}
+                <span
+                  aria-hidden="true"
+                  className="h-0.5 w-full shrink-0"
+                  style={{ backgroundColor: accent }}
+                />
 
-      {/* Grid de tarjetas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-10 gap-y-8 max-w-screen-lg mx-auto px-4">
-        {currentItems.map((worker) => {
-          const tagLabel = getWorkerTagLabel(worker, "General");
-          return (
-          <div key={worker.id} className="group">
-            <div
-              className="mb-4 relative overflow-hidden rounded-xl shadow-lg transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1"
-              style={{
-                backgroundImage: getBackgroundImage(tagLabel),
-                marginRight: "10px",
-              }}
-            >
-              <div className="p-5 backdrop-blur-[2px] backdrop-brightness-[1.02]">
-                <div className="mb-4">
-                  <span
-                    className="inline-block px-3 py-1 text-xs font-semibold rounded-full shadow-sm"
-                    style={{
-                      backgroundImage: getBackgroundImage(tagLabel),
-                      backgroundColor: "rgba(255, 255, 255, 0.7)",
-                      color: "#212121",
-                    }}
-                  >
+                <div className="flex flex-1 flex-col p-6">
+                  <span className="label-tech" style={{ color: accent }}>
                     {tagLabel}
                   </span>
-                </div>
-                <h3 className="font-bold text-xl mb-2 text-gray-900">{worker.name}</h3>
-                <div className="mb-4 text-gray-700 text-sm min-h-[60px] line-clamp-3">{worker.opinion}</div>
-                <a
-                  href={`https://api.whatsapp.com/send?phone=${worker.phone_number}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block w-full transition-transform duration-200 group-hover:scale-105"
-                >
-                  <div
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-gray-800 shadow-md"
-                    style={{
-                      backgroundImage: "linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%)",
-                    }}
-                  >
-                    <AiOutlineWhatsApp className="text-lg" />
-                    <span>Contactar</span>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-          );
-        })}
-      </div>
 
-      {!loading && filteredData.length === 0 && (
-        <div className="text-center py-10">
-          <p className="text-gray-500 text-lg">No se encontraron trabajadores con esa especialidad.</p>
-          <p className="text-gray-400">Intenta con otra búsqueda.</p>
-        </div>
+                  <h3 className="mt-3 font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-bone">
+                    {worker.name}
+                  </h3>
+
+                  {worker.opinion && (
+                    <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-dim">
+                      “{worker.opinion}”
+                    </p>
+                  )}
+
+                  <a
+                    href={`https://api.whatsapp.com/send?phone=${worker.phone_number}`}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="label-tech mt-6 flex items-center justify-center gap-2 rounded-sm border border-line py-3.5 text-dim transition-colors group-hover:border-acid group-hover:bg-acid group-hover:text-void"
+                  >
+                    <AiOutlineWhatsApp className="text-base" />
+                    Contactar
+                  </a>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       )}
 
-      {/* Componente de paginación */}
+      {/* ── Paginación ───────────────────────────────────────── */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-8">
+        <div className="mt-12 flex justify-center">
           <PaginationNav1
             gotoPage={setPageIndex}
             canPreviousPage={pageIndex > 0}

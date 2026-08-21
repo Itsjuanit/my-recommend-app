@@ -1,11 +1,27 @@
-const FormInput = ({ label, id, type = "text", value, onChange, placeholder, required = true }) => {
+// Clase compartida por input, textarea y select para que todos
+// los campos del sitio se vean igual.
+export const fieldClass =
+  "w-full rounded-sm border border-line bg-surface px-4 py-3.5 text-bone placeholder:text-faint transition-colors focus:border-acid focus:outline-none";
+
+export const labelClass = "label-tech mb-2 block text-dim";
+
+const FormInput = ({
+  label,
+  id,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  required = true,
+  hint,
+}) => {
   return (
-    <div className="font-general-regular mb-4">
-      <label className="block text-lg text-primary-dark dark:text-primary-light mb-1" htmlFor={id}>
+    <div className="mb-6">
+      <label className={labelClass} htmlFor={id}>
         {label}
       </label>
       <input
-        className="w-full px-5 py-2 border border-gray-300 dark:border-primary-dark border-opacity-50 text-primary-dark dark:text-secondary-light bg-ternary-light dark:bg-ternary-dark rounded-md shadow-sm text-md"
+        className={fieldClass}
         type={type}
         id={id}
         name={id}
@@ -14,6 +30,7 @@ const FormInput = ({ label, id, type = "text", value, onChange, placeholder, req
         placeholder={placeholder}
         required={required}
       />
+      {hint && <p className="mt-2 text-xs text-faint">{hint}</p>}
     </div>
   );
 };

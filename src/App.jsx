@@ -20,36 +20,38 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const ProtectedRoute = lazy(() => import("./components/login/ProtectedRoute"));
 
 const RouteLoadingFallback = () => (
-  <div className="flex justify-center items-center py-20">
-    <AiOutlineLoading3Quarters className="animate-spin text-3xl text-gray-400" aria-label="Cargando" />
+  <div className="flex items-center justify-center py-32">
+    <AiOutlineLoading3Quarters className="animate-spin text-2xl text-faint" aria-label="Cargando" />
   </div>
 );
 
 function App() {
   return (
     <AnimatePresence>
-      <div key="app" className="bg-secondary-light dark:bg-primary-dark transition duration-300">
-        <ToastContainer />
+      <div key="app" className="flex min-h-screen flex-col bg-void">
+        <ToastContainer theme="dark" />
         <Router>
           <ScrollToTop />
           <AppHeader />
-          <ErrorBoundary>
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="workers" element={<Workers />} />
-                <Route path="form" element={<Form />} />
-                <Route path="login" element={<LoginPage />} />
+          <main className="flex-1">
+            <ErrorBoundary>
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="workers" element={<Workers />} />
+                  <Route path="form" element={<Form />} />
+                  <Route path="login" element={<LoginPage />} />
 
-                {/* Rutas protegidas */}
-                <Route element={<ProtectedRoute />}>
-                  <Route path="dashboard" element={<DashboardPage />} />
-                </Route>
+                  {/* Rutas protegidas */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="dashboard" element={<DashboardPage />} />
+                  </Route>
 
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </ErrorBoundary>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
+          </main>
           <AppFooter />
         </Router>
         <ScrollToTopButton />

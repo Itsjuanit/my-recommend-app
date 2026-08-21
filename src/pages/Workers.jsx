@@ -1,11 +1,5 @@
 import WorkersGrid from "../components/workers/WorkersGrid";
 
-const Workers = () => {
-  return (
-    <div className="container mx-auto">
-      <WorkersGrid />
-    </div>
-  );
-};
+const Workers = () => <WorkersGrid />;
 
 export default Workers;

@@ -1,99 +1,91 @@
 import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
-import { Link } from "react-router-dom";
-import useThemeSwitcher from "../../hooks/useThemeSwitcher";
-import logoLight from "../../images/logo-light.png";
-import logoDark from "../../images/logo-dark.png";
-import { motion } from "framer-motion";
-
-const navLinkClass =
-  "block text-left text-lg text-primary-dark dark:text-ternary-light hover:text-secondary-dark dark:hover:text-secondary-light sm:mx-4 mb-2 sm:py-2";
+import { Link, NavLink } from "react-router-dom";
 
 const navLinks = [
-  { to: "/workers", ariaLabel: "Trabajadores", content: "TRABAJADORES" },
-  {
-    to: "/form",
-    ariaLabel: "form",
-    content: (
-      <>
-        ¿TENES UN{" "}
-        <span style={{ backgroundImage: "linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%)" }}>
-          TRABAJADOR
-        </span>{" "}
-        QUE RECOMENDAR?
-      </>
-    ),
-  },
+  { to: "/workers", label: "Trabajadores" },
+  { to: "/form", label: "Recomendar" },
 ];
 
-const renderNavLinks = (mobile) =>
-  navLinks.map((link, index) => (
-    <Link
-      key={link.to}
-      to={link.to}
-      aria-label={link.ariaLabel}
-      className={
-        mobile && index === navLinks.length - 1
-          ? `${navLinkClass} border-t-2 pt-3 sm:pt-2 sm:border-t-0 border-primary-light dark:border-secondary-dark`
-          : navLinkClass
-      }
-    >
-      {link.content}
-    </Link>
-  ));
+const Wordmark = () => (
+  <Link to="/" className="group flex items-baseline gap-2" aria-label="YaOficios — inicio">
+    <span className="font-display text-2xl font-extrabold tracking-[-0.03em] leading-none">
+      <span className="text-bone">YA</span>
+      <span className="text-acid">OFICIOS</span>
+    </span>
+    <span className="label-tech hidden text-faint transition-colors group-hover:text-acid sm:inline">
+      SAN JUAN
+    </span>
+  </Link>
+);
 
 const AppHeader = () => {
   const [showMenu, setShowMenu] = useState(false);
-  const [activeTheme] = useThemeSwitcher();
 
-  const toggleMenu = () => setShowMenu((prev) => !prev);
+  const linkClass = ({ isActive }) =>
+    `label-tech relative py-2 transition-colors ${
+      isActive ? "text-acid" : "text-dim hover:text-bone"
+    }`;
 
   return (
-    <motion.nav initial={{ opacity: 0 }} animate={{ opacity: 1 }} id="nav" className="sm:container sm:mx-auto">
-      <div className="z-10 max-w-screen-lg xl:max-w-screen-xl block sm:flex sm:justify-between sm:items-center py-6">
-        {/* Header menu links and small screen hamburger menu */}
-        <div className="flex justify-between items-center px-4 sm:px-0">
-          <div>
-            <Link to="/">
-              <img
-                src={activeTheme === "dark" ? logoDark : logoLight}
-                style={{ width: "60px" }}
-                width={60}
-                height={60}
-                alt="YaOficios"
-              />
+    <header className="sticky top-0 z-50 border-b border-line-dim bg-void/85 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
+        <Wordmark />
+
+        {/* Navegación — escritorio */}
+        <nav className="hidden items-center gap-9 sm:flex">
+          {navLinks.map((link) => (
+            <NavLink key={link.to} to={link.to} className={linkClass}>
+              {link.label}
+            </NavLink>
+          ))}
+          <Link
+            to="/form"
+            className="label-tech rounded-sm bg-acid px-4 py-2.5 text-void transition-all hover:shadow-[0_0_24px_rgba(212,252,121,0.35)]"
+          >
+            Sumar oficio
+          </Link>
+        </nav>
+
+        {/* Botón hamburguesa — móvil */}
+        <button
+          onClick={() => setShowMenu((prev) => !prev)}
+          type="button"
+          className="text-bone sm:hidden"
+          aria-label={showMenu ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={showMenu}
+        >
+          {showMenu ? <FiX className="text-2xl" /> : <FiMenu className="text-2xl" />}
+        </button>
+      </div>
+
+      {/* Navegación — móvil */}
+      {showMenu && (
+        <nav className="border-t border-line-dim bg-base px-5 py-5 sm:hidden">
+          <div className="flex flex-col gap-1">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                onClick={() => setShowMenu(false)}
+                className={({ isActive }) =>
+                  `label-tech border-b border-line-dim py-4 ${isActive ? "text-acid" : "text-dim"}`
+                }
+              >
+                {link.label}
+              </NavLink>
+            ))}
+            <Link
+              to="/form"
+              onClick={() => setShowMenu(false)}
+              className="label-tech mt-4 rounded-sm bg-acid px-4 py-3.5 text-center text-void"
+            >
+              Sumar oficio
             </Link>
           </div>
-
-          {/* Small screen hamburger menu */}
-          <div className="sm:hidden">
-            <button onClick={toggleMenu} type="button" className="focus:outline-none" aria-label="Hamburger Menu">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="h-7 w-7 fill-current text-secondary-dark dark:text-ternary-light"
-              >
-                {showMenu ? <FiX className="text-3xl" /> : <FiMenu className="text-3xl" />}
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Header links small screen */}
-        <div
-          className={
-            showMenu ? "block m-0 sm:ml-4 mt-5 sm:mt-3 sm:flex p-5 sm:p-0 justify-center items-center shadow-lg sm:shadow-none" : "hidden"
-          }
-        >
-          {renderNavLinks(true)}
-        </div>
-
-        {/* Header links large screen */}
-        <div className="font-general-medium hidden m-0 sm:ml-4 mt-5 sm:mt-3 sm:flex p-5 sm:p-0 justify-center items-center shadow-lg sm:shadow-none">
-          {renderNavLinks(false)}
-        </div>
-      </div>
-    </motion.nav>
+        </nav>
+      )}
+    </header>
   );
 };
 

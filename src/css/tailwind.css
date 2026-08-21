@@ -2,11 +2,187 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ══════════════════════════════════════════════════════════════
+   YAOFICIOS — "Taller nocturno"
+   Base azul-pizarra · acento lima ácido · grilla técnica
+   ══════════════════════════════════════════════════════════════ */
+
 @theme {
+  /* ── Superficies ─────────────────────────────────────────── */
+  --color-void: #060d15;
+  --color-base: #0a1420;
+  --color-surface: #0f1d2c;
+  --color-raised: #16283b;
+  --color-line: #1e3a55;
+  --color-line-dim: #15263a;
+
+  /* ── Texto ───────────────────────────────────────────────── */
+  --color-bone: #e7eff7;
+  --color-dim: #92a8bf;
+  --color-faint: #5c748c;
+
+  /* ── Acentos de marca ────────────────────────────────────── */
+  --color-acid: #d4fc79;
+  --color-mint: #96e6a1;
+  --color-rust: #ff8a3d;
+  --color-alert: #ff5c5c;
+
+  /* ── Tipografía ──────────────────────────────────────────── */
+  --font-display: "Bricolage Grotesque", "GeneralSans-Variable", sans-serif;
+  --font-body: "GeneralSans-Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-tech: "Martian Mono", ui-monospace, "Courier New", monospace;
+
+  /* ── Legacy: tokens que ya usaban los componentes ────────── */
   --color-primary-light: #f7f8fc;
   --color-primary-dark: #0d2438;
   --color-secondary-light: #ffffff;
   --color-secondary-dark: #102d44;
   --color-ternary-light: #f6f7f8;
   --color-ternary-dark: #1e3851;
+}
+
+/* ── Base ──────────────────────────────────────────────────── */
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-bone);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--color-acid);
+  color: var(--color-void);
+}
+
+/* Grano fino: da textura de material, evita el "plano digital" */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Foco visible y consistente (accesibilidad) */
+:focus-visible {
+  outline: 2px solid var(--color-acid);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Barra de scroll al tono */
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-void);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line-dim);
+  border: 2px solid var(--color-void);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-line);
+}
+
+/* ── Utilidades del sistema ────────────────────────────────── */
+
+/* Grilla técnica tipo plano de obra */
+.grid-blueprint {
+  background-image:
+    linear-gradient(to right, rgba(30, 58, 85, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 58, 85, 0.35) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+/* Se desvanece hacia los bordes para que la grilla no corte seco */
+.grid-fade {
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, #000 30%, transparent 100%);
+}
+
+/* Etiqueta técnica: mono, chica, muy trackeada */
+.label-tech {
+  font-family: var(--font-tech);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Resplandor de acento detrás de un elemento */
+.glow-acid {
+  position: relative;
+}
+.glow-acid::before {
+  content: "";
+  position: absolute;
+  inset: -18%;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 50%, rgba(212, 252, 121, 0.16), transparent 62%);
+  pointer-events: none;
+}
+
+/* Cinta diagonal de obra, como separador */
+.tape-hazard {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-acid) 0 10px,
+    var(--color-void) 10px 20px
+  );
+}
+
+/* Botón flotante "volver arriba" */
+.scrollToTop {
+  position: fixed;
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-void);
+  background-color: var(--color-acid);
+  box-shadow: 0 8px 30px rgba(212, 252, 121, 0.28);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.scrollToTop:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 38px rgba(212, 252, 121, 0.4);
+}
+
+/* Entrada escalonada en la carga de página */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .rise {
+    animation: none;
+  }
+  .scrollToTop {
+    transition: none;
+  }
 }

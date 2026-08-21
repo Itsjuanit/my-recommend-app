@@ -3,10 +3,10 @@ import WorkersGrid from "../components/workers/WorkersGrid";
 
 const Home = () => {
   return (
-    <div className="container mx-auto">
-      <AppBanner></AppBanner>
-      <WorkersGrid></WorkersGrid>
-    </div>
+    <>
+      <AppBanner />
+      <WorkersGrid />
+    </>
   );
 };
 

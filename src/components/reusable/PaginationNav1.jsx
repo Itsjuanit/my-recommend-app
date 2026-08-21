@@ -1,38 +1,35 @@
-import React from "react";
-
 export default function PaginationNav1({ pageIndex, pageCount, gotoPage, canPreviousPage, canNextPage }) {
+  const arrowClass =
+    "label-tech rounded-sm border border-line-dim px-4 py-2.5 text-dim transition-colors hover:border-acid hover:text-acid disabled:pointer-events-none disabled:opacity-35";
+
   return (
-    <nav aria-label="Page navigation example">
-      <ul className="list-style-none flex">
+    <nav aria-label="Paginación de trabajadores">
+      <ul className="flex flex-wrap items-center justify-center gap-2">
         <li>
-          <button
-            onClick={() => gotoPage(pageIndex - 1)}
-            disabled={!canPreviousPage}
-            className="relative block rounded bg-transparent px-3 py-1.5 text-sm text-neutral-600 transition-all duration-300 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700 dark:hover:text-white mr-2"
-          >
+          <button onClick={() => gotoPage(pageIndex - 1)} disabled={!canPreviousPage} className={arrowClass}>
             Anterior
           </button>
         </li>
+
         {Array.from({ length: pageCount }).map((_, i) => (
-          <li key={i} aria-current={i === pageIndex ? "page" : undefined}>
+          <li key={i}>
             <button
               onClick={() => gotoPage(i)}
-              className={`relative block rounded bg-transparent px-3 py-1.5 text-sm transition-all duration-300 ${
+              aria-current={i === pageIndex ? "page" : undefined}
+              aria-label={`Página ${i + 1}`}
+              className={`label-tech h-10 w-10 rounded-sm border transition-colors ${
                 i === pageIndex
-                  ? "text-neutral-600 font-bold"
-                  : "text-neutral-600 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700 dark:hover:text-white"
+                  ? "border-acid bg-acid text-void"
+                  : "border-line-dim text-dim hover:border-acid hover:text-acid"
               }`}
             >
               {i + 1}
             </button>
           </li>
         ))}
+
         <li>
-          <button
-            onClick={() => gotoPage(pageIndex + 1)}
-            disabled={!canNextPage}
-            className="relative block rounded bg-transparent px-3 py-1.5 text-sm text-neutral-600 transition-all duration-300 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700 dark:hover:text-white ml-2"
-          >
+          <button onClick={() => gotoPage(pageIndex + 1)} disabled={!canNextPage} className={arrowClass}>
             Siguiente
           </button>
         </li>

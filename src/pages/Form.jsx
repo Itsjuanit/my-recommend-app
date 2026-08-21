@@ -1,11 +1,5 @@
 import { FormNewPerson } from "../components/form/FormNewPerson";
 
-const Form = () => {
-  return (
-    <div className="container mx-auto">
-      <FormNewPerson />
-    </div>
-  );
-};
+const Form = () => <FormNewPerson />;
 
 export default Form;

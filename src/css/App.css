@@ -1,8 +1,6 @@
-@reference "tailwindcss";
-
-body {
-  font-family: "GeneralSans-Variable";
-}
+/* Familias tipográficas locales (GeneralSans).
+   Los tokens de color, tipografía y utilidades del sistema
+   viven en css/tailwind.css */
 
 /* Fonts */
 @font-face {
@@ -201,31 +199,3 @@ body {
   font-family: "GeneralSans-BoldItalic";
 }
 
-/* Scroll to top style */
-.scrollToTop {
-  @apply bg-indigo-600;
-  @apply text-white;
-  position: fixed;
-  width: 100%;
-  align-items: center;
-  height: 20px;
-  justify-content: center;
-  z-index: 999;
-  cursor: pointer;
-  animation: fadeIn 0.3s;
-  transition: opacity 0.4s;
-  opacity: 0.9;
-}
-
-.scrollToTop:hover {
-  opacity: 1;
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 0.5;
-  }
-}

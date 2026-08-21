@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebaseConfig"; // Importa tu configuración de Firebase
-import FormInput from "../reusable/FormInput";
+import FormInput, { fieldClass, labelClass } from "../reusable/FormInput";
 import Button from "../reusable/Button";
 
 export const Login = () => {
@@ -37,27 +37,42 @@ export const Login = () => {
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="w-full max-w-md mx-auto mt-8 bg-white shadow-md rounded-[10px] border border-[#d4fc79] px-8 pt-6 pb-8">
-        <form onSubmit={handleSubmit}>
+    <section className="relative overflow-hidden">
+      <div className="grid-blueprint grid-fade pointer-events-none absolute inset-0" aria-hidden="true" />
+
+      <div className="relative mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-5 py-16 sm:px-8">
+        <div className="flex items-center gap-3">
+          <span className="h-px w-8 bg-acid" />
+          <span className="label-tech text-acid">Acceso restringido</span>
+        </div>
+
+        <h1 className="mt-6 font-display text-4xl font-extrabold uppercase leading-none tracking-[-0.03em] text-bone">
+          Panel de<br />administración
+        </h1>
+
+        <form
+          onSubmit={handleSubmit}
+          className="mt-10 rounded-sm border border-line-dim bg-surface p-6 sm:p-8"
+        >
           <FormInput
-            label="EMAIL"
+            label="Email"
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="vos@ejemplo.com"
           />
 
-          <div className="font-general-regular mb-4">
-            <label className="block text-lg text-primary-dark dark:text-primary-light mb-1" htmlFor="password">
-              CONTRASEÑA
+          <div className="mb-8">
+            <label className={labelClass} htmlFor="password">
+              Contraseña
             </label>
             <div className="relative">
               <input
                 id="password"
                 name="password"
                 type={passwordVisible ? "text" : "password"}
-                className="w-full px-5 py-2 pr-10 border border-gray-300 dark:border-primary-dark border-opacity-50 text-primary-dark dark:text-secondary-light bg-ternary-light dark:bg-ternary-dark rounded-md shadow-sm text-md"
+                className={`${fieldClass} pr-12`}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -66,22 +81,18 @@ export const Login = () => {
                 type="button"
                 onClick={handlePasswordVisibility}
                 aria-label={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center cursor-pointer"
+                className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-faint transition-colors hover:text-acid"
               >
-                {passwordVisible ? <AiFillEye size={20} /> : <AiFillEyeInvisible size={20} />}
+                {passwordVisible ? <AiFillEye size={18} /> : <AiFillEyeInvisible size={18} />}
               </button>
             </div>
           </div>
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-4 py-2 px-4 rounded-[10px] font-bold text-[#212121] bg-[linear-gradient(120deg,#d4fc79_0%,#96e6a1_100%)] disabled:opacity-60"
-          >
-            {loading ? "INGRESANDO..." : "INGRESAR"}
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? "Ingresando…" : "Ingresar"}
           </Button>
         </form>
       </div>
-    </div>
+    </section>
   );
 };

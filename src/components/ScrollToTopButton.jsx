@@ -14,21 +14,17 @@ const ScrollToTopButton = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  if (!visible) return null;
+
   return (
-    <FiChevronUp
-      className="scrollToTop"
+    <button
+      type="button"
       onClick={scrollToTop}
-      style={{
-        height: 45,
-        width: 45,
-        borderRadius: 50,
-        right: 50,
-        bottom: 50,
-        display: visible ? "flex" : "none",
-        padding: 5,
-        backgroundImage: "linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%)",
-      }}
-    />
+      aria-label="Volver arriba"
+      className="scrollToTop bottom-8 right-8 flex h-12 w-12 rounded-sm"
+    >
+      <FiChevronUp className="text-xl" />
+    </button>
   );
 };
 

@@ -8,51 +8,39 @@ import {
   AiOutlinePhone,
   AiOutlineTag,
   AiOutlineComment,
-  AiOutlineInfoCircle,
 } from "react-icons/ai";
+import { FiLogOut } from "react-icons/fi";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { db } from "../../firebaseConfig";
+import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { db, auth } from "../../firebaseConfig";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getWorkerTagLabel } from "../../utils/workerTags";
 
 const TABS = [
-  { id: "all", label: "Todos", activeClass: "shadow-md bg-blue-500 text-white border-blue-500" },
-  { id: "accepted", label: "Aceptados", activeClass: "shadow-md bg-emerald-500 text-white border-emerald-500" },
-  { id: "rejected", label: "Rechazados", activeClass: "shadow-md bg-red-500 text-white border-red-500" },
+  { id: "all", label: "Todos" },
+  { id: "pending", label: "Pendientes" },
+  { id: "accepted", label: "Aceptados" },
+  { id: "rejected", label: "Rechazados" },
 ];
 
-const actionButtonClass =
-  "flex items-center justify-center rounded-full p-2 transition-colors duration-200 border-none bg-transparent cursor-pointer disabled:cursor-not-allowed disabled:pointer-events-none";
-
-// Funciones para definir clases según la etiqueta o estado
-const getTagClass = (tag) => {
-  if (!tag) return "bg-gray-200 text-gray-600";
-
-  const tagLower = tag.toLowerCase();
-  if (tagLower.includes("pintor")) return "bg-blue-100 text-blue-800";
-  if (tagLower.includes("plomero")) return "bg-green-100 text-green-800";
-  if (tagLower.includes("electricista")) return "bg-amber-100 text-amber-800";
-  if (tagLower.includes("gasista")) return "bg-red-100 text-red-800";
-  return "bg-purple-100 text-purple-800";
+const STATUS = {
+  accepted: { label: "Aceptado", color: "#d4fc79" },
+  rejected: { label: "Rechazado", color: "#ff5c5c" },
+  pending: { label: "Pendiente", color: "#ff8a3d" },
 };
 
-const getStatusClass = (status) => {
-  if (status === "accepted") return "bg-white text-green-800";
-  if (status === "rejected") return "bg-red-100 text-red-800";
-  return "bg-gray-200 text-gray-600";
-};
+const getStatus = (status) => STATUS[status] ?? STATUS.pending;
 
-const getStatusBarClass = (status) => {
-  if (status === "accepted") return "bg-[#B8F28B]";
-  if (status === "rejected") return "bg-red-500";
-  return "bg-blue-500";
-};
+const actionClass =
+  "flex h-10 w-10 items-center justify-center rounded-sm border border-line-dim text-dim transition-colors disabled:pointer-events-none disabled:opacity-30";
 
 export const Dashboard = () => {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("all"); // "all", "accepted" o "rejected"
+  const [activeTab, setActiveTab] = useState("all"); // "all", "pending", "accepted" o "rejected"
+  const navigate = useNavigate();
 
   // Función para obtener los datos de Firestore y ordenarlos por fecha (más recientes primero)
   const fetchCards = async () => {
@@ -85,7 +73,7 @@ export const Dashboard = () => {
       await updateDoc(workerRef, {
         status: newStatus,
       });
-      toast.success(`Trabajador marcado como ${newStatus}`);
+      toast.success(`Trabajador marcado como ${getStatus(newStatus).label.toLowerCase()}`);
       setCards((prev) =>
         prev.map((worker) => (worker.id === workerId ? { ...worker, status: newStatus } : worker))
       );
@@ -108,142 +96,172 @@ export const Dashboard = () => {
     }
   };
 
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/login");
+  };
+
   useEffect(() => {
     fetchCards();
   }, []);
 
+  // Contador por pestaña
+  const countFor = (tabId) =>
+    tabId === "all"
+      ? cards.length
+      : cards.filter((worker) => (worker.status ?? "pending") === tabId).length;
+
   // Filtrar trabajadores según la pestaña activa
   const filteredCards = cards.filter((worker) => {
     if (activeTab === "all") return true;
-    return worker.status === activeTab;
+    return (worker.status ?? "pending") === activeTab;
   });
 
-  // Renderizar una tarjeta de trabajador
-  const renderWorkerCard = (worker) => {
-    const displayTag = getWorkerTagLabel(worker, "Sin etiqueta");
-    const isAccepted = worker.status === "accepted";
-    const isRejected = worker.status === "rejected";
-
-    return (
-      <div
-        key={worker.id}
-        className="bg-white rounded-lg shadow overflow-hidden border border-gray-100 transition-shadow duration-300 hover:shadow-lg"
-      >
-        {/* Barra superior de color según el estado */}
-        <div className={`h-1 w-full ${getStatusBarClass(worker.status)}`}></div>
-
-        <div className="p-5">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">{worker.name}</h2>
-
-          <div className="mb-3">
-            <div className="flex items-start mb-3 text-sm">
-              <AiOutlinePhone className="text-gray-500 mr-2 shrink-0" />
-              <span className="font-medium mr-2 text-gray-600">Phone Number:</span>
-              <a href={`tel:${worker.phone_number}`} className="text-blue-600 no-underline hover:underline">
-                {worker.phone_number}
-              </a>
-            </div>
-
-            <div className="flex items-start mb-3 text-sm">
-              <AiOutlineComment className="text-gray-500 mr-2 mt-0.5 shrink-0" />
-              <span className="font-medium mr-2 text-gray-600">Opinion:</span>
-              <span className="text-gray-500">{worker.opinion}</span>
-            </div>
-
-            <div className="flex items-start mb-3 text-sm">
-              <AiOutlineInfoCircle className="text-gray-500 mr-2 shrink-0" />
-              <span className="font-medium mr-2 text-gray-600">Status:</span>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusClass(worker.status)}`}>
-                {worker.status}
-              </span>
-            </div>
-
-            <div className="flex items-start mb-3 text-sm">
-              <AiOutlineTag className="text-gray-500 mr-2 shrink-0" />
-              <span className="font-medium mr-2 text-gray-600">Tag:</span>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getTagClass(displayTag)}`}>
-                {displayTag}
-              </span>
-            </div>
-          </div>
-
-          {/* Línea separadora */}
-          <div className="border-t border-gray-100 my-4"></div>
-
-          {/* Botones para actualizar estado y borrar */}
-          <div className="flex justify-end gap-1 mt-2">
-            <button
-              className={`${actionButtonClass} ${
-                isAccepted ? "text-green-300" : "text-green-500 hover:bg-green-50 hover:text-green-700"
-              }`}
-              onClick={() => !isAccepted && updateWorkerStatus(worker.id, "accepted")}
-              disabled={isAccepted}
-              title="Marcar como Aceptado"
-            >
-              <AiOutlineCheck className="text-xl" />
-              <span className="sr-only">Aceptar</span>
-            </button>
-            <button
-              className={`${actionButtonClass} ${
-                isRejected ? "text-red-300" : "text-red-500 hover:bg-red-50 hover:text-red-700"
-              }`}
-              onClick={() => !isRejected && updateWorkerStatus(worker.id, "rejected")}
-              disabled={isRejected}
-              title="Marcar como Rechazado"
-            >
-              <AiOutlineClose className="text-xl" />
-              <span className="sr-only">Rechazar</span>
-            </button>
-            <button
-              className={`${actionButtonClass} text-gray-500 hover:bg-gray-50 hover:text-gray-600`}
-              onClick={() => deleteWorker(worker.id)}
-              title="Borrar trabajador"
-            >
-              <AiOutlineDelete className="text-xl" />
-              <span className="sr-only">Eliminar</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-white">
-      <ToastContainer />
-      <div className="bg-white px-4 py-6">
-        <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-      </div>
-      <div className="max-w-[1200px] mx-auto px-4 py-8">
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              className={`px-4 py-2 rounded-lg font-medium cursor-pointer transition-all duration-200 border border-white ${
-                activeTab === tab.id ? tab.activeClass : "bg-white text-gray-600"
-              }`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
+    <section className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+      <ToastContainer theme="dark" />
+
+      {/* ── Encabezado ───────────────────────────────────────── */}
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line-dim pb-6">
+        <div>
+          <div className="flex items-center gap-3">
+            <span className="h-px w-8 bg-acid" />
+            <span className="label-tech text-acid">Panel interno</span>
+          </div>
+          <h1 className="mt-4 font-display text-4xl font-extrabold uppercase leading-none tracking-[-0.03em] text-bone">
+            Moderación
+          </h1>
         </div>
 
-        {/* Mostrar trabajadores según la pestaña seleccionada */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {loading ? (
-            <div className="col-span-full text-center py-10 text-gray-500">Cargando trabajadores...</div>
-          ) : filteredCards.length > 0 ? (
-            filteredCards.map((worker) => renderWorkerCard(worker))
-          ) : (
-            <div className="col-span-full text-center py-10 text-gray-500">
-              No hay trabajadores para mostrar en esta categoría.
-            </div>
-          )}
-        </div>
+        <button
+          onClick={handleLogout}
+          className="label-tech flex items-center gap-2 rounded-sm border border-line-dim px-4 py-2.5 text-dim transition-colors hover:border-alert hover:text-alert"
+        >
+          <FiLogOut className="text-sm" />
+          Salir
+        </button>
       </div>
-    </div>
+
+      {/* ── Pestañas ─────────────────────────────────────────── */}
+      <div className="mt-8 flex flex-wrap gap-2">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            aria-pressed={activeTab === tab.id}
+            className={`label-tech flex items-center gap-2 rounded-sm border px-4 py-2.5 transition-colors ${
+              activeTab === tab.id
+                ? "border-acid bg-acid text-void"
+                : "border-line-dim text-dim hover:border-line hover:text-bone"
+            }`}
+          >
+            {tab.label}
+            <span className={activeTab === tab.id ? "text-void/60" : "text-faint"}>
+              {countFor(tab.id)}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* ── Fichas ───────────────────────────────────────────── */}
+      {loading ? (
+        <p className="py-20 text-center text-dim">Cargando trabajadores…</p>
+      ) : filteredCards.length === 0 ? (
+        <p className="py-20 text-center text-dim">No hay trabajadores en esta categoría.</p>
+      ) : (
+        <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredCards.map((worker) => {
+            const status = getStatus(worker.status);
+            const isAccepted = worker.status === "accepted";
+            const isRejected = worker.status === "rejected";
+
+            return (
+              <li
+                key={worker.id}
+                className="flex flex-col overflow-hidden rounded-sm border border-line-dim bg-surface"
+              >
+                <span
+                  aria-hidden="true"
+                  className="h-0.5 w-full shrink-0"
+                  style={{ backgroundColor: status.color }}
+                />
+
+                <div className="flex flex-1 flex-col p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="font-display text-xl font-bold leading-tight tracking-[-0.02em] text-bone">
+                      {worker.name}
+                    </h2>
+                    <span className="label-tech shrink-0" style={{ color: status.color }}>
+                      {status.label}
+                    </span>
+                  </div>
+
+                  <dl className="mt-5 space-y-3 text-sm">
+                    <div className="flex items-center gap-2.5">
+                      <dt className="sr-only">Teléfono</dt>
+                      <AiOutlinePhone className="shrink-0 text-faint" aria-hidden="true" />
+                      <dd>
+                        <a
+                          href={`tel:${worker.phone_number}`}
+                          className="font-tech text-xs text-dim transition-colors hover:text-acid"
+                        >
+                          {worker.phone_number}
+                        </a>
+                      </dd>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <dt className="sr-only">Oficio</dt>
+                      <AiOutlineTag className="shrink-0 text-faint" aria-hidden="true" />
+                      <dd className="label-tech text-dim">
+                        {getWorkerTagLabel(worker, "Sin etiqueta")}
+                      </dd>
+                    </div>
+
+                    {worker.opinion && (
+                      <div className="flex gap-2.5">
+                        <dt className="sr-only">Opinión</dt>
+                        <AiOutlineComment className="mt-0.5 shrink-0 text-faint" aria-hidden="true" />
+                        <dd className="leading-relaxed text-dim">{worker.opinion}</dd>
+                      </div>
+                    )}
+                  </dl>
+
+                  <div className="mt-6 flex justify-end gap-2 border-t border-line-dim pt-5">
+                    <button
+                      className={`${actionClass} hover:border-acid hover:text-acid`}
+                      onClick={() => !isAccepted && updateWorkerStatus(worker.id, "accepted")}
+                      disabled={isAccepted}
+                      title="Marcar como aceptado"
+                    >
+                      <AiOutlineCheck />
+                      <span className="sr-only">Aceptar</span>
+                    </button>
+                    <button
+                      className={`${actionClass} hover:border-alert hover:text-alert`}
+                      onClick={() => !isRejected && updateWorkerStatus(worker.id, "rejected")}
+                      disabled={isRejected}
+                      title="Marcar como rechazado"
+                    >
+                      <AiOutlineClose />
+                      <span className="sr-only">Rechazar</span>
+                    </button>
+                    <button
+                      className={`${actionClass} hover:border-alert hover:bg-alert hover:text-void`}
+                      onClick={() => deleteWorker(worker.id)}
+                      title="Borrar trabajador"
+                    >
+                      <AiOutlineDelete />
+                      <span className="sr-only">Eliminar</span>
+                    </button>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 };
 

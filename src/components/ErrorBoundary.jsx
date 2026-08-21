@@ -14,11 +14,12 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="container mx-auto text-center py-20">
-          <h1 className="text-2xl font-bold text-primary-dark dark:text-primary-light mb-2">
+        <div className="mx-auto max-w-xl px-5 py-24 text-center">
+          <p className="label-tech text-alert">Error</p>
+          <h1 className="mt-5 font-display text-4xl font-extrabold uppercase leading-none tracking-[-0.03em] text-bone">
             Algo salió mal
           </h1>
-          <p className="text-gray-500">Probá recargar la página en unos minutos.</p>
+          <p className="mt-4 text-dim">Probá recargar la página en unos minutos.</p>
         </div>
       );
     }

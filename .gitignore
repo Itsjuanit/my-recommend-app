@@ -22,3 +22,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .env
+
+# scraped data
+workers.json
+
+# scripts locales, no van al repo
+scripts/
