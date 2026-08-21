@@ -1,20 +1,28 @@
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import ScrollToTop from "./components/ScrollToTop";
 import AppFooter from "./components/shared/AppFooter";
 import AppHeader from "./components/shared/AppHeader";
 import "./css/App.css";
-import UseScrollToTop from "./hooks/useScrollToTop";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 import { Analytics } from "@vercel/analytics/react";
 import { ToastContainer } from "react-toastify";
-import ProtectedRoute from "./components/login/ProtectedRoute"; // Importa el componente de ruta protegida
 
 const Home = lazy(() => import("./pages/Home"));
 const Workers = lazy(() => import("./pages/Workers"));
 const Form = lazy(() => import("./pages/Form"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const ProtectedRoute = lazy(() => import("./components/login/ProtectedRoute"));
+
+const RouteLoadingFallback = () => (
+  <div className="flex justify-center items-center py-20">
+    <AiOutlineLoading3Quarters className="animate-spin text-3xl text-gray-400" aria-label="Cargando" />
+  </div>
+);
 
 function App() {
   return (
@@ -24,7 +32,7 @@ function App() {
         <Router>
           <ScrollToTop />
           <AppHeader />
-          <Suspense fallback={""}>
+          <Suspense fallback={<RouteLoadingFallback />}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="workers" element={<Workers />} />
@@ -35,11 +43,13 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="dashboard" element={<DashboardPage />} />
               </Route>
+
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
           <AppFooter />
         </Router>
-        <UseScrollToTop />
+        <ScrollToTopButton />
       </div>
       <Analytics />
     </AnimatePresence>

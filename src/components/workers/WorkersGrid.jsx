@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { AiOutlineWhatsApp } from "react-icons/ai";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import PaginationNav1 from "../reusable/PaginationNav1"; // Ajusta la ruta según tu estructura
+import { getWorkerTagLabel } from "../../utils/workerTags";
 
 const WorkersGrid = () => {
   const [search, setSearch] = useState("");
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   // Usamos pageIndex (0-based) para la paginación
   const [pageIndex, setPageIndex] = useState(0);
   const itemsPerPage = 9;
@@ -43,32 +45,28 @@ const WorkersGrid = () => {
   };
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "workers"), (snapshot) => {
-      const allWorkers = snapshot.docs.map((doc) => ({
+    const acceptedWorkersQuery = query(collection(db, "workers"), where("status", "==", "accepted"));
+    const unsubscribe = onSnapshot(acceptedWorkersQuery, (snapshot) => {
+      const acceptedWorkers = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      console.log("Todos los workers recibidos:", allWorkers);
-      const acceptedWorkers = allWorkers.filter((worker) => worker.status === "accepted");
-      console.log("Trabajadores aceptados:", acceptedWorkers);
       setData(acceptedWorkers);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   // Filtrado considerando worker.tag o worker.tags (array)
-  const filteredData = data.filter((worker) => {
-    const tagValue = worker.tag ? worker.tag : worker.tags ? worker.tags.join(", ") : "";
-    return tagValue.toLowerCase().includes(search.toLowerCase());
-  });
-  console.log("Trabajadores filtrados:", filteredData);
+  const filteredData = data.filter((worker) =>
+    getWorkerTagLabel(worker).toLowerCase().includes(search.toLowerCase())
+  );
 
   // Cálculo de paginación (0-based)
   const indexOfFirstItem = pageIndex * itemsPerPage;
   const indexOfLastItem = indexOfFirstItem + itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  console.log("Página actual:", pageIndex, "Total páginas:", totalPages);
 
   return (
     <section className="py-5 sm:py-10 mt-5 sm:mt-10 min-h-screen">
@@ -94,14 +92,22 @@ const WorkersGrid = () => {
         </div>
       </div>
 
+      {loading && (
+        <div className="text-center py-10">
+          <p className="text-gray-500 text-lg">Cargando trabajadores...</p>
+        </div>
+      )}
+
       {/* Grid de tarjetas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-10 gap-y-8 max-w-screen-lg mx-auto px-4">
-        {currentItems.map((worker) => (
+        {currentItems.map((worker) => {
+          const tagLabel = getWorkerTagLabel(worker, "General");
+          return (
           <div key={worker.id} className="group">
             <div
               className="mb-4 relative overflow-hidden rounded-xl shadow-lg transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1"
               style={{
-                backgroundImage: getBackgroundImage(worker.tag ? worker.tag : worker.tags ? worker.tags.join(", ") : ""),
+                backgroundImage: getBackgroundImage(tagLabel),
                 marginRight: "10px",
               }}
             >
@@ -110,12 +116,12 @@ const WorkersGrid = () => {
                   <span
                     className="inline-block px-3 py-1 text-xs font-semibold rounded-full shadow-sm"
                     style={{
-                      backgroundImage: getBackgroundImage(worker.tag ? worker.tag : worker.tags ? worker.tags.join(", ") : ""),
+                      backgroundImage: getBackgroundImage(tagLabel),
                       backgroundColor: "rgba(255, 255, 255, 0.7)",
                       color: "#212121",
                     }}
                   >
-                    {worker.tag ? worker.tag : worker.tags ? worker.tags.join(", ") : "General"}
+                    {tagLabel}
                   </span>
                 </div>
                 <h3 className="font-bold text-xl mb-2 text-gray-900">{worker.name}</h3>
@@ -139,10 +145,11 @@ const WorkersGrid = () => {
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
-      {filteredData.length === 0 && (
+      {!loading && filteredData.length === 0 && (
         <div className="text-center py-10">
           <p className="text-gray-500 text-lg">No se encontraron trabajadores con esa especialidad.</p>
           <p className="text-gray-400">Intenta con otra búsqueda.</p>

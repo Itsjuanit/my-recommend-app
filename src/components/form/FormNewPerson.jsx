@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
+import FormInput from "../reusable/FormInput";
+import Button from "../reusable/Button";
 
 export const FormNewPerson = () => {
   const [name, setName] = useState("");
@@ -24,8 +26,15 @@ export const FormNewPerson = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!name || !number || !opinion || tags.length === 0) {
+
+    const trimmedTag = tags[0]?.trim();
+    if (!name || !number || !opinion || !trimmedTag) {
       toast.error("Por favor completa todos los campos");
+      return;
+    }
+
+    if (!/^\d{6,15}$/.test(number)) {
+      toast.error("Ingresá un número de celular válido (solo dígitos).");
       return;
     }
 
@@ -39,8 +48,7 @@ export const FormNewPerson = () => {
     };
 
     try {
-      const docRef = await addDoc(collection(db, "workers"), data);
-      console.log("Documento agregado con ID:", docRef.id);
+      await addDoc(collection(db, "workers"), data);
       setName("");
       setNumber("");
       setOpinion("");
@@ -76,32 +84,18 @@ export const FormNewPerson = () => {
     <div className="container mx-auto">
       <div className="w-full max-w-md mx-auto mt-8 bg-white shadow-md rounded px-8 pt-6 pb-8">
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
-              Nombre:
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-gray-200 rounded-md"
-              style={{ borderRadius: "10px" }}
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="number" className="block text-gray-700 text-sm font-bold mb-2">
-              Número de celular:
-            </label>
-            <input
-              id="number"
-              type="text"
-              value={number}
-              onChange={(event) => setNumber(event.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-gray-200 rounded-md"
-              style={{ borderRadius: "10px" }}
-            />
-          </div>
+          <FormInput
+            label="Nombre:"
+            id="name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
+          <FormInput
+            label="Número de celular:"
+            id="number"
+            value={number}
+            onChange={(event) => setNumber(event.target.value)}
+          />
           <div className="mb-4">
             <label htmlFor="opinion" className="block text-gray-700 text-sm font-bold mb-2">
               Opinión:
@@ -143,17 +137,12 @@ export const FormNewPerson = () => {
               </div>
             )}
           </div>
-          <button
-            style={{
-              backgroundImage: "linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%)",
-              color: "#212121",
-              borderRadius: "10px",
-            }}
+          <Button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="w-full py-2 px-4 rounded-[10px] font-bold text-[#212121] bg-[linear-gradient(120deg,#d4fc79_0%,#96e6a1_100%)]"
           >
             ENVIAR
-          </button>
+          </Button>
         </form>
       </div>
       <ToastContainer />

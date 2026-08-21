@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 body {
   font-family: "GeneralSans-Variable";
 }

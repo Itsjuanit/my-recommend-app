@@ -1,11 +1,7 @@
-import useThemeSwitcher from "../../hooks/useThemeSwitcher";
-import toolboxLight from "../../images/toolbox.png";
-import toolboxDark from "../../images/toolbox.png";
+import toolbox from "../../images/toolbox.png";
 import { motion } from "framer-motion";
 
 const AppBanner = () => {
-  const [activeTheme] = useThemeSwitcher();
-
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -48,16 +44,6 @@ const AppBanner = () => {
             YAOFICIOS{" "}
           </span>
         </motion.p>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{
-            ease: "easeInOut",
-            duration: 0.9,
-            delay: 0.3,
-          }}
-          className="flex justify-center sm:block"
-        ></motion.div>
       </div>
       <motion.div
         initial={{ opacity: 0, y: -180 }}
@@ -65,10 +51,7 @@ const AppBanner = () => {
         transition={{ ease: "easeInOut", duration: 0.9, delay: 0.2 }}
         className="w-full sm:w-2/3 text-right float-right mt-8 sm:mt-0"
       >
-        <img
-          src={activeTheme === "dark" ? toolboxLight : toolboxDark}
-          alt="Developer"
-        />
+        <img src={toolbox} width={1024} height={1024} alt="Ilustración de caja de herramientas" />
       </motion.div>
     </motion.section>
   );

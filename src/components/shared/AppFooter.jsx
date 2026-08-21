@@ -24,8 +24,8 @@ const AppFooter = () => {
             Este sitio ha sido realizado por{" "}
             <a
               href="https://portfolio-itsjuanit.vercel.app/"
-              target="__blank"
-              rel="noreferrer"
+              target="_blank"
+              rel="noreferrer noopener"
               style={{
                 backgroundImage:
                   "linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%)",
@@ -39,7 +39,8 @@ const AppFooter = () => {
             {socialLinks.map((link) => (
               <a
                 href={link.url}
-                target="__blank"
+                target="_blank"
+                rel="noreferrer noopener"
                 key={link.id}
                 className="text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 cursor-pointer rounded-lg bg-gray-50 dark:bg-ternary-dark hover:bg-gray-100 shadow-sm p-4 duration-300"
               >
