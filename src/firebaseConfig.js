@@ -1,6 +1,5 @@
 // Importa las funciones necesarias de Firebase
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth"; // Importa Firestore
 
@@ -21,8 +20,6 @@ const app = initializeApp(firebaseConfig);
 // Inicializa Firestore
 const db = getFirestore(app); // Aquí se inicializa Firestore
 
-// Inicializa Analytics
-const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 
 // Exporta db para usarlo en otros componentes

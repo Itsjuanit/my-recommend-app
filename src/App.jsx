@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import ScrollToTop from "./components/ScrollToTop";
+import ErrorBoundary from "./components/ErrorBoundary";
 import AppFooter from "./components/shared/AppFooter";
 import AppHeader from "./components/shared/AppHeader";
 import "./css/App.css";
@@ -27,31 +28,33 @@ const RouteLoadingFallback = () => (
 function App() {
   return (
     <AnimatePresence>
-      <div className="bg-secondary-light dark:bg-primary-dark transition duration-300">
+      <div key="app" className="bg-secondary-light dark:bg-primary-dark transition duration-300">
         <ToastContainer />
         <Router>
           <ScrollToTop />
           <AppHeader />
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="workers" element={<Workers />} />
-              <Route path="form" element={<Form />} />
-              <Route path="login" element={<LoginPage />} />
+          <ErrorBoundary>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="workers" element={<Workers />} />
+                <Route path="form" element={<Form />} />
+                <Route path="login" element={<LoginPage />} />
 
-              {/* Rutas protegidas */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="dashboard" element={<DashboardPage />} />
-              </Route>
+                {/* Rutas protegidas */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="dashboard" element={<DashboardPage />} />
+                </Route>
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
           <AppFooter />
         </Router>
         <ScrollToTopButton />
       </div>
-      <Analytics />
+      <Analytics key="analytics" />
     </AnimatePresence>
   );
 }
